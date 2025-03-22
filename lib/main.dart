@@ -1,8 +1,7 @@
 import 'package:ecomerce_app/firebase_options.dart';
 import 'package:ecomerce_app/home.dart';
-import 'package:ecomerce_app/screens/admin/admin_home_screen.dart';
 import 'package:ecomerce_app/screens/auth/login_screen.dart';
-import 'package:ecomerce_app/screens/splash_screen.dart';
+import 'package:ecomerce_app/screens/dashboard/dashboard_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +22,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: SplashScreen(),
+      home: Home(),
       debugShowCheckedModeBanner: false,
     );
   }

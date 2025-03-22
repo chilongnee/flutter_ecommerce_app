@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 class ProductRepository extends GetxController {
   static ProductRepository get instance => Get.find();
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  static const int limit = 10;
 
   // Thêm sản phẩm
   Future<void> addProduct(ProductModel product) async {
@@ -108,6 +109,43 @@ class ProductRepository extends GetxController {
       print("Lỗi khi lấy danh sách sản phẩm theo danh mục: $error");
       return [];
     }
+  }
+
+  // Lấy sản phẩm theo danh mục và phân trang
+  Future<Map<String, dynamic>> getProductsByCategory2(
+    String categoryId, {
+    DocumentSnapshot? lastDoc,
+  }) async {
+    Query query = _db
+        .collection("products")
+        .where("categoryId", isEqualTo: categoryId)
+        .where("parentId", isNull: true)
+        .limit(10);
+
+    if (lastDoc != null) {
+      query = query.startAfterDocument(lastDoc);
+    }
+
+    QuerySnapshot snapshot = await query.get();
+
+    if (snapshot.docs.isEmpty) {
+      return {"products": [], "lastDoc": null};
+    }
+
+    List<ProductModel> products =
+        snapshot.docs
+            .map(
+              (doc) => ProductModel.fromJson(
+                doc.data() as Map<String, dynamic>,
+                doc.id,
+              ),
+            )
+            .toList();
+
+    return {
+      "products": products,
+      "lastDoc": snapshot.docs.isNotEmpty ? snapshot.docs.last : null,
+    };
   }
 
   // Lấy danh sách biến thể của một sản phẩm

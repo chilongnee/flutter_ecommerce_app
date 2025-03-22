@@ -24,26 +24,67 @@ class CategoryRepository extends GetxController {
     }
   }
 
-  // Xóa danh mục theo ID
+  // Lấy danh sách tất cả danh mục cha
+  Future<List<CategoryModel>> getParentCategories() async {
+    try {
+      QuerySnapshot snapshot =
+          await _db
+              .collection("categories")
+              .where("parentId", isNull: true)
+              .get();
+      return snapshot.docs
+          .map(
+            (doc) => CategoryModel.fromJson(
+              doc.data() as Map<String, dynamic>,
+              doc.id,
+            ),
+          )
+          .toList();
+    } catch (error) {
+      print("Lỗi khi lấy danh mục cha: $error");
+      return [];
+    }
+  }
+
+  // Lấy danh mục con theo parentId
+  Future<List<CategoryModel>> getSubCategories(String parentId) async {
+    try {
+      QuerySnapshot snapshot =
+          await _db
+              .collection("categories")
+              .where("parentId", isEqualTo: parentId)
+              .get();
+      return snapshot.docs
+          .map(
+            (doc) => CategoryModel.fromJson(
+              doc.data() as Map<String, dynamic>,
+              doc.id,
+            ),
+          )
+          .toList();
+    } catch (error) {
+      print("Lỗi khi lấy danh mục con: $error");
+      return [];
+    }
+  }
+
   Future<void> deleteCategory(String categoryId) async {
     try {
-      final productsSnapshot =
+      QuerySnapshot subCategories =
           await _db
-              .collection('products')
-              .where('categoryId', isEqualTo: categoryId)
+              .collection("categories")
+              .where("parentId", isEqualTo: categoryId)
               .get();
-
-      for (var doc in productsSnapshot.docs) {
-        await _db.collection('products').doc(doc.id).delete();
+      for (var doc in subCategories.docs) {
+        await _db.collection("categories").doc(doc.id).delete();
       }
 
-      await _db.collection('categories').doc(categoryId).delete();
+      await _db.collection("categories").doc(categoryId).delete();
     } catch (e) {
       throw Exception("Lỗi khi xóa danh mục: $e");
     }
   }
 
-  // Sửa danh mục theo ID
   Future<void> updateCategory(
     BuildContext context,
     CategoryModel category,
@@ -64,37 +105,37 @@ class CategoryRepository extends GetxController {
     }
   }
 
-  // Lấy danh sách tất cả danh mục
-  Future<List<CategoryModel>> getAllCategories() async {
-    try {
-      QuerySnapshot snapshot = await _db.collection("categories").get();
-      return snapshot.docs.map((doc) {
-        return CategoryModel.fromJson(
-          doc.data() as Map<String, dynamic>,
-          doc.id,
-        );
-      }).toList();
-    } catch (error) {
-      print("Lỗi khi lấy danh sách danh mục: $error");
-      return [];
-    }
-  }
+  // // Lấy danh sách tất cả danh mục
+  // Future<List<CategoryModel>> getAllCategories() async {
+  //   try {
+  //     QuerySnapshot snapshot = await _db.collection("categories").get();
+  //     return snapshot.docs.map((doc) {
+  //       return CategoryModel.fromJson(
+  //         doc.data() as Map<String, dynamic>,
+  //         doc.id,
+  //       );
+  //     }).toList();
+  //   } catch (error) {
+  //     print("Lỗi khi lấy danh sách danh mục: $error");
+  //     return [];
+  //   }
+  // }
 
-  // Lấy danh mục theo ID
-  Future<CategoryModel?> getCategoryById(String id) async {
-    try {
-      DocumentSnapshot doc = await _db.collection("categories").doc(id).get();
-      if (doc.exists) {
-        return CategoryModel.fromJson(
-          doc.data() as Map<String, dynamic>,
-          doc.id,
-        );
-      }
-    } catch (error) {
-      print("Lỗi khi lấy danh mục: $error");
-    }
-    return null;
-  }
+  // // Lấy danh mục theo ID
+  // Future<CategoryModel?> getCategoryById(String id) async {
+  //   try {
+  //     DocumentSnapshot doc = await _db.collection("categories").doc(id).get();
+  //     if (doc.exists) {
+  //       return CategoryModel.fromJson(
+  //         doc.data() as Map<String, dynamic>,
+  //         doc.id,
+  //       );
+  //     }
+  //   } catch (error) {
+  //     print("Lỗi khi lấy danh mục: $error");
+  //   }
+  //   return null;
+  // }
 
   void _handleError(BuildContext context, dynamic error) {
     ScaffoldMessenger.of(context).showSnackBar(

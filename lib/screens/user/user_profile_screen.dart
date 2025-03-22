@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:ecomerce_app/models/user_model.dart';
 import 'package:ecomerce_app/repository/user_repository.dart';
 import 'package:ecomerce_app/screens/auth/login_screen.dart';
+import 'package:ecomerce_app/utils/image_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
@@ -51,7 +52,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           _email = userModel.email;
           _fullNameController.text = userModel.fullName;
           _addressController.text = userModel.address;
-          _linkImage = userModel.linkImage ?? "";
+          _linkImage = userModel.linkImage;
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -425,13 +426,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               children: [
                 CircleAvatar(
                   radius: 50,
-                  backgroundImage:
-                      _selectedImage != null
-                          ? FileImage(_selectedImage!)
-                          : (_linkImage != null && _linkImage!.isNotEmpty
-                              ? FileImage(File(_linkImage!))
-                              : const AssetImage('assets/avtUser.png')
-                                  as ImageProvider),
+                  child: ImageUtils.buildImage(_linkImage),
                 ),
                 IconButton(
                   onPressed: _pickImage,

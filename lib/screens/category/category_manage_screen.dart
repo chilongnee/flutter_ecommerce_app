@@ -2,8 +2,8 @@ import 'package:ecomerce_app/models/category_model.dart';
 import 'package:ecomerce_app/repository/category_repository.dart';
 import 'package:ecomerce_app/screens/category/add_category_screen.dart';
 import 'package:ecomerce_app/screens/product/product_list_screen.dart';
+import 'package:ecomerce_app/utils/image_utils.dart';
 import 'package:flutter/material.dart';
-import 'dart:io';
 
 class CategoryManagementScreen extends StatefulWidget {
   const CategoryManagementScreen({super.key});
@@ -14,11 +14,16 @@ class CategoryManagementScreen extends StatefulWidget {
 }
 
 class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
-  final CategoryRepository _categoryRepo = CategoryRepository();
-  List<CategoryModel> _allCategories = [];
+  List<CategoryModel> _parentCategories = [];
   List<CategoryModel> _filteredCategories = [];
-  bool isGridView = false;
+  Map<String, List<CategoryModel>> _subCategories = {};
+
   final TextEditingController _searchController = TextEditingController();
+  final CategoryRepository _categoryRepo = CategoryRepository();
+  Set<String> _selectedCategories = {};
+
+  bool isGridView = false;
+  bool _isSelecting = false;
 
   @override
   void initState() {
@@ -27,11 +32,17 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
   }
 
   Future<void> _loadCategories() async {
-    final categories = await _categoryRepo.getAllCategories();
+    final parents = await _categoryRepo.getParentCategories();
     setState(() {
-      _allCategories = categories;
-      _filteredCategories = categories;
+      _parentCategories = parents;
+      _filteredCategories = parents;
     });
+    for (var parent in parents) {
+      final children = await _categoryRepo.getSubCategories(parent.id!);
+      setState(() {
+        _subCategories[parent.id!] = children;
+      });
+    }
   }
 
   void _navigateToAddCategory() async {
@@ -44,62 +55,26 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
 
   void _filterCategories(String query) {
     setState(() {
-      _filteredCategories = _allCategories
-          .where((category) =>
-              category.name.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+      _filteredCategories =
+          _parentCategories
+              .where(
+                (category) =>
+                    category.name.toLowerCase().contains(query.toLowerCase()),
+              )
+              .toList();
     });
   }
 
   void _editCategory(CategoryModel category) async {
-    await Navigator.push(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AddCategoryScreen(category: category),
       ),
     );
-    _loadCategories();
-  }
 
-  void _confirmDeleteCategory(CategoryModel category) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Xác nhận xóa"),
-        content: Text(
-            "Bạn có chắc chắn muốn xóa danh mục '${category.name}' không? Điều này sẽ xóa tất cả sản phẩm thuộc danh mục này."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Hủy"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _deleteCategory(category.id!);
-            },
-            child: const Text("Xóa", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _deleteCategory(String categoryId) async {
-    try {
-      await _categoryRepo.deleteCategory(categoryId);
-      setState(() {
-        _allCategories.removeWhere((category) => category.id == categoryId);
-        _filteredCategories
-            .removeWhere((category) => category.id == categoryId);
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Đã xóa danh mục thành công")),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi khi xóa danh mục: $e")),
-      );
+    if (result == true) {
+      _loadCategories();
     }
   }
 
@@ -108,22 +83,40 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        title: const Text("Quản lý danh mục"),
-        backgroundColor: Colors.green,
+        title: Text(_isSelecting ? "Chọn danh mục" : "Quản lý danh mục"),
+        backgroundColor: const Color(0xFF7AE582),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _navigateToAddCategory,
-          ),
-        ],
+        actions:
+            _isSelecting
+                ? [
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: _confirmDeleteMultipleCategories,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      setState(() {
+                        _isSelecting = false;
+                        _selectedCategories.clear();
+                      });
+                    },
+                  ),
+                ]
+                : [
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: _navigateToAddCategory,
+                  ),
+                ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Card(
           color: Colors.white,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
           elevation: 3,
           child: Padding(
             padding: const EdgeInsets.all(12),
@@ -143,24 +136,32 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                         const Text(
                           "Danh mục",
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
                     Row(
                       children: [
                         IconButton(
-                          icon: Icon(Icons.list,
-                              color: !isGridView
-                                  ? const Color(0xFF7AE582)
-                                  : Colors.grey),
+                          icon: Icon(
+                            Icons.list,
+                            color:
+                                !isGridView
+                                    ? const Color(0xFF7AE582)
+                                    : Colors.grey,
+                          ),
                           onPressed: () => setState(() => isGridView = false),
                         ),
                         IconButton(
-                          icon: Icon(Icons.grid_view,
-                              color: isGridView
-                                  ? const Color(0xFF7AE582)
-                                  : Colors.grey),
+                          icon: Icon(
+                            Icons.grid_view,
+                            color:
+                                isGridView
+                                    ? const Color(0xFF7AE582)
+                                    : Colors.grey,
+                          ),
                           onPressed: () => setState(() => isGridView = true),
                         ),
                       ],
@@ -190,17 +191,22 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                       hintText: "Tìm kiếm danh mục...",
                       prefixIcon: Icon(Icons.search),
                       border: InputBorder.none,
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 16,
+                      ),
                     ),
                   ),
                 ),
 
                 // Danh sách danh mục
                 Expanded(
-                  child: _filteredCategories.isEmpty
-                      ? const Center(child: Text("Không tìm thấy danh mục nào"))
-                      : isGridView
+                  child:
+                      _parentCategories.isEmpty
+                          ? const Center(
+                            child: Text("Không tìm thấy danh mục nào"),
+                          )
+                          : isGridView
                           ? _buildGridView()
                           : _buildListView(),
                 ),
@@ -216,7 +222,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
   Widget _buildGridView() {
     return GridView.builder(
       padding: const EdgeInsets.all(5),
-      itemCount: _filteredCategories.length,
+      itemCount: _parentCategories.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 0.92,
@@ -224,47 +230,81 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
         mainAxisSpacing: 10,
       ),
       itemBuilder: (context, index) {
-        final category = _filteredCategories[index];
+        final parent = _parentCategories[index];
+        final isSelected = _selectedCategories.contains(parent.id);
         return GestureDetector(
+          onLongPress: () {
+            setState(() {
+              _isSelecting = true;
+              _selectedCategories.add(parent.id!);
+            });
+          },
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProductListScreen(
-                    categoryId: category.id!, categoryName: category.name),
-              ),
-            );
+            if (_isSelecting) {
+              setState(() {
+                if (isSelected) {
+                  _selectedCategories.remove(parent.id!);
+                } else {
+                  _selectedCategories.add(parent.id!);
+                }
+              });
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => ProductListScreen(
+                        categoryId: parent.id!,
+                        categoryName: parent.name,
+                      ),
+                ),
+              );
+            }
           },
           child: Card(
-            color: Colors.white,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            color: isSelected ? Colors.grey.withOpacity(0.2) : Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             elevation: 3,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: _buildImage(category.imageUrl),
+                  child: ImageUtils.buildImage(parent.imageUrl),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
                 Text(
-                  category.name,
+                  parent.name,
                   style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 5),
+                if (_isSelecting)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.blue),
-                      onPressed: () => _editCategory(category),
+                    Checkbox(
+                      value: isSelected,
+                      activeColor: Colors.blue,
+                      onChanged: (selected) {
+                        setState(() {
+                          if (selected == true) {
+                            _selectedCategories.add(parent.id!);
+                          } else {
+                            _selectedCategories.remove(parent.id!);
+                          }
+                        });
+                      },
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _confirmDeleteCategory(category),
-                    ),
+                    if (isSelected && _selectedCategories.length == 1)
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.black),
+                        onPressed: () => _editCategory(parent),
+                      ),
                   ],
                 ),
               ],
@@ -275,65 +315,126 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     );
   }
 
-  Widget _buildImage(String? imagePath) {
-    if (imagePath == null || imagePath.isEmpty) {
-      return const Icon(Icons.image_not_supported,
-          size: 80, color: Colors.grey);
-    }
-
-    if (imagePath.startsWith('/')) {
-      return Image.file(File(imagePath),
-          width: 80, height: 80, fit: BoxFit.cover);
-    } else {
-      return Image.network(imagePath, width: 80, height: 80, fit: BoxFit.cover);
-    }
-  }
-
   // List View
   Widget _buildListView() {
     return ListView.builder(
       padding: const EdgeInsets.all(5),
-      itemCount: _filteredCategories.length,
+      itemCount: _parentCategories.length,
       itemBuilder: (context, index) {
-        final category = _filteredCategories[index];
-        return Card(
-          color: Colors.white,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          elevation: 2,
-          margin: const EdgeInsets.only(bottom: 10),
-          child: ListTile(
-            leading: ClipRRect(
-              borderRadius: BorderRadius.circular(5),
-              child: _buildImage(category.imageUrl),
-            ),
-            title: Text(category.name,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.blue),
-                  onPressed: () => _editCategory(category),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => _confirmDeleteCategory(category),
-                ),
-              ],
-            ),
-            onTap: () {
+        final parent = _parentCategories[index];
+        final isSelected = _selectedCategories.contains(parent.id);
+
+        return GestureDetector(
+          onLongPress: () {
+            setState(() {
+              _isSelecting = true;
+              _selectedCategories.add(parent.id!);
+            });
+          },
+          onTap: () {
+            if (_isSelecting) {
+              setState(() {
+                if (isSelected) {
+                  _selectedCategories.remove(parent.id!);
+                } else {
+                  _selectedCategories.add(parent.id!);
+                }
+              });
+            } else {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProductListScreen(
-                      categoryId: category.id!, categoryName: category.name),
+                  builder:
+                      (context) => ProductListScreen(
+                        categoryId: parent.id!,
+                        categoryName: parent.name,
+                      ),
                 ),
               );
-            },
+            }
+          },
+          child: Card(
+            color: isSelected ? Colors.blue.withOpacity(0.5) : Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            elevation: 2,
+            margin: const EdgeInsets.only(bottom: 10),
+            child: ListTile(
+              leading: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_isSelecting)
+                    Checkbox(
+                      value: isSelected,
+                      activeColor: Colors.blue,
+                      onChanged: (selected) {
+                        setState(() {
+                          if (selected == true) {
+                            _selectedCategories.add(parent.id!);
+                          } else {
+                            _selectedCategories.remove(parent.id!);
+                          }
+                        });
+                      },
+                    ),
+
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: ImageUtils.buildImage(parent.imageUrl),
+                  ),
+                ],
+              ),
+              title: Text(
+                parent.name,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+
+              trailing:
+                  isSelected && _selectedCategories.length == 1
+                      ? IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.black),
+                        onPressed: () => _editCategory(parent),
+                      )
+                      : null,
+            ),
           ),
         );
       },
+    );
+  }
+
+  void _confirmDeleteMultipleCategories() {
+    if (_selectedCategories.isEmpty) return;
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Xác nhận xóa"),
+            content: Text(
+              "Bạn có chắc chắn muốn xóa ${_selectedCategories.length} danh mục không?",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Hủy"),
+              ),
+              TextButton(
+                onPressed: () async {
+                  for (String id in _selectedCategories) {
+                    await _categoryRepo.deleteCategory(id);
+                  }
+                  setState(() {
+                    _isSelecting = false;
+                    _selectedCategories.clear();
+                    _loadCategories();
+                  });
+                  Navigator.pop(context);
+                },
+                child: const Text("Xóa", style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
     );
   }
 }

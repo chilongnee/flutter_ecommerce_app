@@ -63,11 +63,30 @@ class _AddVariantScreenState extends State<AddVariantScreen> {
         return;
       }
 
+      String cleanPrice = _priceController.text.trim();
+      cleanPrice = cleanPrice.replaceAll(RegExp(r'[^\d,]'), '');
+      cleanPrice = cleanPrice.replaceAll(',', '.');
+
+      int lastDotIndex = cleanPrice.lastIndexOf(".");
+      if (lastDotIndex != -1) {
+        String beforeDot = cleanPrice
+            .substring(0, lastDotIndex)
+            .replaceAll('.', '');
+        String afterDot = cleanPrice.substring(lastDotIndex);
+        cleanPrice = beforeDot + afterDot;
+      }
+
+      if (cleanPrice.isEmpty || cleanPrice == ".") {
+        cleanPrice = "0";
+      }
+
+      double price = double.tryParse(cleanPrice) ?? 0.0;
+
       ProductModel newVariant = ProductModel(
         parentId: widget.parentProduct.id,
         productName: _nameController.text.trim(),
         description: widget.parentProduct.description,
-        price: double.parse(_priceController.text.trim()),
+        price: price,
         discount: 0.0,
         brand: widget.parentProduct.brand,
         categoryId: widget.parentProduct.categoryId,

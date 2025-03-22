@@ -4,9 +4,9 @@ import 'package:ecomerce_app/models/product_model.dart';
 import 'package:ecomerce_app/repository/product_repository.dart';
 import 'package:ecomerce_app/screens/product/edit_product_screen.dart';
 import 'package:ecomerce_app/screens/product/product_detail_screen.dart';
+import 'package:ecomerce_app/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:intl/intl.dart';
 
 class ProductListScreen extends StatefulWidget {
   final String categoryId;
@@ -89,7 +89,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Sản phẩm - ${widget.categoryName}"),
-        backgroundColor: Colors.green,
+        backgroundColor: const Color(0xFF7AE582),
       ),
       body: _products.isEmpty
           ? const Center(child: Text("Không có sản phẩm nào"))
@@ -141,7 +141,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     subtitle: Text(
-                      formatCurrency(product.price),
+                      Utils.formatCurrency(product.price),
                       style: const TextStyle(
                         fontSize: 14,
                         color: Colors.red,
@@ -175,10 +175,5 @@ class _ProductListScreenState extends State<ProductListScreen> {
     } else {
       return Image.network(imagePath, width: 80, height: 80, fit: BoxFit.cover);
     }
-  }
-
-  String formatCurrency(double price) {
-    final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
-    return formatter.format(price);
   }
 }

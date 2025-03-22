@@ -58,7 +58,7 @@ class UserRepository extends GetxController {
           email: data["email"] ?? "",
           fullName: data["fullName"] ?? "",
           address: data["address"] ?? "",
-          linkImage: data["linkImage"] ?? "",
+          linkImage: data["imageLink"] ?? "",
         );
       } else {
         print("Dữ liệu người dùng rỗng hoặc không tồn tại");

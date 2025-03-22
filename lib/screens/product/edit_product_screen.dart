@@ -56,7 +56,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 
   Future<void> _loadCategories() async {
-    final categories = await _categoryRepo.getAllCategories();
+    final categories = await _categoryRepo.getParentCategories();
     setState(() {
       _categories = categories;
     });
@@ -72,18 +72,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
       });
     }
   }
-
-  // Future<File> _saveImageLocally(File image) async {
-  //   final directory = await getApplicationDocumentsDirectory();
-  //   final imagesDir = Directory('${directory.path}/images');
-  //   if (!await imagesDir.exists()) {
-  //     await imagesDir.create(recursive: true);
-  //   }
-  //   final String fileName = basename(image.path);
-  //   final File localImage = File('${imagesDir.path}/$fileName');
-  //   await image.copy(localImage.path);
-  //   return localImage;
-  // }
 
   void _updateProduct(BuildContext context) async {
     if (_formKey.currentState!.validate() && _selectedCategory != null) {

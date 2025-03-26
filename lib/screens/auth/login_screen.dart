@@ -1,5 +1,5 @@
-import 'package:ecomerce_app/screens/widgets/custom_button.dart';
-import 'package:ecomerce_app/screens/widgets/input_field.dart';
+import 'package:ecomerce_app/screens/widgets/button_input/custom_button.dart';
+import 'package:ecomerce_app/screens/widgets/button_input/input_field.dart';
 import 'package:flutter/material.dart';
 // SCREEN
 import 'package:ecomerce_app/home.dart';
@@ -82,7 +82,7 @@ class _LoginState extends State<Login> {
       print("Sign in successfully!!");
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const Home()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -146,27 +146,6 @@ class _LoginState extends State<Login> {
                         height: 32,
                         width: 100,
                       ),
-
-                      // ElevatedButton(
-                      //   onPressed: () {
-                      //     Navigator.push(
-                      //       context,
-                      //       MaterialPageRoute(builder: (context) => SignUp()),
-                      //     );
-                      //   },
-                      //   style: ElevatedButton.styleFrom(
-                      //     backgroundColor: Color(0xFF7AE582),
-                      //     foregroundColor: Colors.white,
-                      //     minimumSize: const Size(70, 32),
-                      //     shape: RoundedRectangleBorder(
-                      //       borderRadius: BorderRadius.circular(5),
-                      //     ),
-                      //   ),
-                      //   child: const Text(
-                      //     'Đăng ký',
-                      //     style: TextStyle(fontSize: 12),
-                      //   ),
-                      // ),
                     ],
                   ),
                 ),

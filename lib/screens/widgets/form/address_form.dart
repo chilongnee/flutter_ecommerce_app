@@ -1,5 +1,5 @@
-import 'package:ecomerce_app/screens/widgets/dropdown_field.dart';
-import 'package:ecomerce_app/screens/widgets/input_field.dart';
+import 'package:ecomerce_app/screens/widgets/button_input/dropdown_field.dart';
+import 'package:ecomerce_app/screens/widgets/button_input/input_field.dart';
 import 'package:ecomerce_app/services/address_service.dart';
 import 'package:flutter/material.dart';
 

@@ -5,11 +5,11 @@ class AddressService {
   static Future<List<Map<String, String>>> searchStreet(String streetName) async {
     final url =
         "https://nominatim.openstreetmap.org/search?format=json&q=$streetName, Vietnam";
-    print("🔍 Gửi request đến API: $url");
+    print("Gửi request đến API: $url");
 
     try {
       final response = await http.get(Uri.parse(url));
-      print("📩 Phản hồi API: ${response.statusCode}");
+      print("Phản hồi API: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);

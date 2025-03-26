@@ -57,7 +57,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.product.productName),
-        backgroundColor: widget.fromDashboard ?  const Color(0xFF7AE582) : Colors.white,
+        backgroundColor:
+            widget.fromDashboard ? const Color(0xFF7AE582) : Colors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -73,13 +74,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
+                Expanded(
                   child: Text(
                     widget.product.productName,
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
+                    softWrap: true,
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -188,8 +190,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   final variant = variants[index];
                   return Card(
                     child: ListTile(
-                      leading:
-                          ImageUtils.buildImage(variant.images.first),
+                      leading: ImageUtils.buildImage(variant.images.first),
                       title: Text(variant.productName),
                       subtitle: Text(Utils.formatCurrency(variant.price)),
                       onTap: () {
@@ -218,7 +219,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                 ],
               ),
-            ], 
+            ],
             const SizedBox(height: 20),
             if (widget.fromDashboard)
               Row(
@@ -228,7 +229,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 18,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -242,7 +246,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 18,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),

@@ -33,7 +33,6 @@ class ProductCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(8),
               child: Column(
-                mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ClipRRect(
@@ -45,52 +44,53 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.productName,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 6),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (product.discount > 0)
-                              Text(
-                                Utils.formatCurrency(
-                                  product.price * (1 - product.discount / 100),
-                                ),
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            Text(
-                              Utils.formatCurrency(product.price),
-                              style: TextStyle(
-                                fontSize: 8,
-                                color: Colors.grey,
-                                decoration:
-                                    product.discount > 0
-                                        ? TextDecoration.lineThrough
-                                        : TextDecoration.none,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Utils.buildStarRating(product.rating, size: 18),
-                      ],
+                  SizedBox(
+                    width: 120,
+                    child: Text(
+                      product.productName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(height: 6),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (product.discount > 0)
+                        Text(
+                          Utils.formatCurrency(
+                            product.price * (1 - product.discount / 100),
+                          ),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      Text(
+                        Utils.formatCurrency(product.price),
+                        style: TextStyle(
+                          fontSize: product.discount > 0 ? 12 : 14,
+                          color:
+                              product.discount > 0 ? Colors.grey : Colors.red,
+                          fontWeight:
+                              product.discount > 0
+                                  ? FontWeight.normal
+                                  : FontWeight.bold,
+                          decoration:
+                              product.discount > 0
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  Utils.buildStarRating(product.rating, size: 18),
                 ],
               ),
             ),

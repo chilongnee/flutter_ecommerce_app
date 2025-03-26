@@ -5,6 +5,12 @@ import 'package:ecomerce_app/models/user_model.dart';
 import 'package:ecomerce_app/repository/category_repository.dart';
 import 'package:ecomerce_app/repository/user_repository.dart';
 import 'package:ecomerce_app/screens/dashboard/dashboard_product_list_screen.dart';
+import 'package:ecomerce_app/screens/widgets/appbar/home_appbar.dart';
+import 'package:ecomerce_app/screens/widgets/banner/banner_widget.dart';
+import 'package:ecomerce_app/screens/widgets/form/header_container.dart';
+import 'package:ecomerce_app/screens/widgets/form/home_category.dart';
+import 'package:ecomerce_app/screens/widgets/search/search_container.dart';
+import 'package:ecomerce_app/screens/widgets/text/section_heading_1.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -20,17 +26,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final UserRepository _userRepo = UserRepository();
   String _fullName = "Khách hàng";
 
-  // Banner
-  final PageController _pageController = PageController(initialPage: 0);
-  int _currentPage = 0;
-  Timer? _timer;
-
-  final List<String> _bannerImages = [
-    'assets/banner1.png',
-    'assets/banner2.png',
-    'assets/banner3.png',
-  ];
-
   // Category
   final CategoryRepository _categoryRepo = CategoryRepository();
   List<CategoryModel> _categories = [];
@@ -40,7 +35,100 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _loadUser();
     _loadCategories();
-    _startAutoSlide();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Header
+              HeaderContainer(
+                child: Column(
+                  children: [
+                    // App Bar
+                    HomeAppBar(fullName: _fullName),
+                    const SizedBox(height: 15),
+
+                    // Search Bar
+                    SearchContainer(text: 'Tìm kiếm trong cửa hàng'),
+                    const SizedBox(height: 15),
+
+                    // Categories
+                    Padding(
+                      padding: EdgeInsets.only(left: 29.0),
+                      child: Column(
+                        children: [
+                          // Heading
+                          SectionHeading1(
+                            title: 'Danh mục phổ biến',
+                            showActionButton: false,
+                          ),
+                          // const SizedBox(height: 0),
+                          // Categories
+                          HomeCategories(categories: _categories),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                  ],
+                ),
+              ),
+
+              // Body
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 30,
+                ).copyWith(top: 15, bottom: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Banner
+                    BannerWidget(),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: _categories.length,
+                      itemBuilder: (context, index) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Text(
+                                _categories[index].name,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 250,
+                              child: ProductListView(
+                                categoryId: _categories[index].id!,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _loadUser() async {
@@ -96,204 +184,5 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     double maxPrice = querySnapshot.docs.first['price'].toDouble();
     return maxPrice;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _timer?.cancel();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "HA SHOP",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "Xin chào, $_fullName",
-                style: const TextStyle(fontSize: 14, color: Colors.black),
-              ),
-              const SizedBox(height: 8),
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(
-                Icons.shopping_cart_outlined,
-                color: Colors.black,
-              ),
-              onPressed: () {
-                print("Mở giỏ hàng");
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.chat_outlined, color: Colors.black),
-              onPressed: () {
-                print("Mở chat");
-              },
-            ),
-          ],
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildBanner(),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: _categories.length,
-                itemBuilder: (context, index) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          _categories[index].name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 250,
-                        child: ProductListView(
-                          categoryId: _categories[index].id!,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // BANNER
-  Widget _buildBanner() {
-    return SizedBox(
-      height: 200,
-      child: Stack(
-        children: [
-          PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
-            itemBuilder: (context, index) {
-              int actualIndex = index % _bannerImages.length;
-              return Image.asset(
-                _bannerImages[actualIndex],
-                fit: BoxFit.fill,
-                width: double.infinity,
-              );
-            },
-          ),
-          Positioned(
-            right: 10,
-            top: 75,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.grey.withOpacity(0.7),
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_forward, color: Colors.black),
-                onPressed: _nextBanner,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 10,
-            right: 20,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(_bannerImages.length, (index) {
-                return GestureDetector(
-                  onTap: () {
-                    _pageController.animateToPage(
-                      index,
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeInOut,
-                    );
-                    setState(() {
-                      _currentPage = index;
-                    });
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    width:
-                        (_currentPage % _bannerImages.length == index) ? 5 : 8,
-                    height:
-                        (_currentPage % _bannerImages.length == index)
-                            ? 15
-                            : 10,
-                    decoration: BoxDecoration(
-                      shape:
-                          (_currentPage % _bannerImages.length == index)
-                              ? BoxShape.rectangle
-                              : BoxShape.circle,
-                      borderRadius:
-                          (_currentPage % _bannerImages.length == index)
-                              ? BorderRadius.circular(5)
-                              : null,
-                      color:
-                          (_currentPage % _bannerImages.length == index)
-                              ? Colors.white
-                              : Colors.grey,
-                    ),
-                  ),
-                );
-              }),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _startAutoSlide() {
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (_pageController.page == _bannerImages.length - 1) {
-        _pageController.animateToPage(
-          0,
-          duration: Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
-      } else {
-        _pageController.nextPage(
-          duration: Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
-      }
-    });
-  }
-
-  void _nextBanner() {
-    if (!_pageController.hasClients) return;
-
-    _pageController.nextPage(
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-    );
-
-    setState(() {
-      _currentPage = (_currentPage) % _bannerImages.length;
-    });
   }
 }

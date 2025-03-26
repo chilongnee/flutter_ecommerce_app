@@ -1,10 +1,10 @@
-import 'package:ecomerce_app/screens/widgets/custom_button.dart';
+import 'package:ecomerce_app/screens/widgets/button_input/custom_button.dart';
 import 'package:flutter/material.dart';
 // SCREEN
 import 'package:ecomerce_app/screens/auth/login_screen.dart';
 // WIDGET
-import 'package:ecomerce_app/screens/widgets/address_form.dart';
-import 'package:ecomerce_app/screens/widgets/input_field.dart';
+import 'package:ecomerce_app/screens/widgets/form/address_form.dart';
+import 'package:ecomerce_app/screens/widgets/button_input/input_field.dart';
 // MODEL REPO
 import 'package:ecomerce_app/models/user_model.dart';
 import 'package:ecomerce_app/repository/user_repository.dart';

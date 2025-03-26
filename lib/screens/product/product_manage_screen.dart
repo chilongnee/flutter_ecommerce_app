@@ -76,7 +76,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        title: Text(_isSelecting ? "Chọn sản phẩm" : "Quản lý danh mục"),
+        title: Text(_isSelecting ? "Chọn sản phẩm" : "Quản lý sản phẩm"),
         backgroundColor: const Color(0xFF7AE582),
         centerTitle: true,
         actions:

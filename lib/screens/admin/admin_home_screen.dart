@@ -1,3 +1,4 @@
+import 'package:ecomerce_app/home.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // SCREEN
@@ -182,7 +183,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           if (!mounted) return;
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => LoginScreen()),
+            MaterialPageRoute(builder: (context) => HomeScreen()),
             (route) => false,
           );
         },

@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
 import 'package:ecomerce_app/home.dart';
 import 'package:ecomerce_app/screens/admin/admin_home_screen.dart';
-import 'package:ecomerce_app/screens/auth/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,10 +20,16 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _checkLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-    String? role = prefs.getString('role');
+    User? user = FirebaseAuth.instance.currentUser;
 
-    await Future.delayed(const Duration(seconds: 2));
+    if (user == null) {
+      await prefs.setBool('isLoggedIn', false);
+    }
+
+    String? role = prefs.getString('role') ?? 'user';
+    bool isLoggedIn = user != null;
+
+    await Future.delayed(const Duration(seconds: 1));
 
     if (isLoggedIn) {
       if (role == 'admin') {
@@ -40,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const Login()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     }
   }

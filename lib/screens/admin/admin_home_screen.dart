@@ -182,7 +182,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           if (!mounted) return;
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => Login()),
+            MaterialPageRoute(builder: (context) => LoginScreen()),
             (route) => false,
           );
         },

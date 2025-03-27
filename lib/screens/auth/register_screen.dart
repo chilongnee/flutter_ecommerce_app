@@ -12,14 +12,14 @@ import 'package:ecomerce_app/repository/user_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ecomerce_app/services/firebase_auth_service.dart';
 
-class SignUp extends StatefulWidget {
-  const SignUp({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  State<SignUp> createState() => _SignUpState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpState extends State<SignUp> {
+class _SignUpScreenState extends State<SignUpScreen> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   final UserRepository _userRepo = UserRepository();
 
@@ -32,7 +32,6 @@ class _SignUpState extends State<SignUp> {
   bool _obscureTextPassword = true;
   bool _obscureTextCFPassword = true;
   bool _isSigningUp = false;
-  // final FocusNode _fullName = FocusNode();
   final FocusNode _email = FocusNode();
   final FocusNode _password = FocusNode();
   final FocusNode _cfpassword = FocusNode();
@@ -44,7 +43,7 @@ class _SignUpState extends State<SignUp> {
     print("Địa chỉ đã chọn: $_addressController");
   }
 
-  void _signUp() async {
+  void _signUpScreen() async {
     setState(() {
       _isSigningUp = true;
     });
@@ -74,7 +73,7 @@ class _SignUpState extends State<SignUp> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const Login()),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       }
     } catch (e) {
@@ -293,7 +292,7 @@ class _SignUpState extends State<SignUp> {
                                 text: 'Đăng ký',
                                 onPressed: () {
                                   if (_formKey.currentState!.validate()) {
-                                    _signUp();
+                                    _signUpScreen();
                                   }
                                 },
                                 isLoading: _isSigningUp,

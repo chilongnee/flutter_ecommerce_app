@@ -1,6 +1,5 @@
 import 'package:ecomerce_app/screens/dashboard/dashboard_screen.dart';
 import 'package:ecomerce_app/screens/setting/setting_screen.dart';
-import 'package:ecomerce_app/screens/user/user_profile_screen.dart';
 import 'package:ecomerce_app/screens/widgets/appbar/custom_bottombar.dart';
 import 'package:flutter/material.dart';
 

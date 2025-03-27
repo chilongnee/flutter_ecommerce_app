@@ -68,6 +68,23 @@ class CategoryRepository extends GetxController {
     }
   }
 
+  // Future<void> deleteCategory(String categoryId) async {
+  //   try {
+  //     QuerySnapshot subCategories =
+  //         await _db
+  //             .collection("categories")
+  //             .where("parentId", isEqualTo: categoryId)
+  //             .get();
+  //     for (var doc in subCategories.docs) {
+  //       await _db.collection("categories").doc(doc.id).delete();
+  //     }
+
+  //     await _db.collection("categories").doc(categoryId).delete();
+  //   } catch (e) {
+  //     throw Exception("Lỗi khi xóa danh mục: $e");
+  //   }
+  // }
+
   Future<void> deleteCategory(String categoryId) async {
     try {
       QuerySnapshot subCategories =
@@ -75,8 +92,19 @@ class CategoryRepository extends GetxController {
               .collection("categories")
               .where("parentId", isEqualTo: categoryId)
               .get();
+
       for (var doc in subCategories.docs) {
         await _db.collection("categories").doc(doc.id).delete();
+      }
+
+      QuerySnapshot products =
+          await _db
+              .collection("products")
+              .where("categoryId", isEqualTo: categoryId)
+              .get();
+
+      for (var doc in products.docs) {
+        await _db.collection("products").doc(doc.id).delete();
       }
 
       await _db.collection("categories").doc(categoryId).delete();

@@ -4,7 +4,7 @@ class SettingMenuTile extends StatelessWidget {
   final IconData icon;
   final String title, subTitle;
   final Widget? trailing;
-  final VoidCallback? opTap;
+  final VoidCallback? onTap;
 
   const SettingMenuTile({
     super.key,
@@ -12,7 +12,7 @@ class SettingMenuTile extends StatelessWidget {
     required this.title,
     required this.subTitle,
     this.trailing,
-    this.opTap,
+    this.onTap,
   });
 
   @override
@@ -28,7 +28,7 @@ class SettingMenuTile extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        title,
+        subTitle,
         style: Theme.of(context).textTheme.headlineMedium!.copyWith(
           fontSize: 10,
           color: Colors.black,
@@ -36,7 +36,7 @@ class SettingMenuTile extends StatelessWidget {
         ),
       ),
       trailing: trailing,
-      onTap: opTap,
+      onTap: onTap,
     );
   }
 }
